@@ -7,15 +7,33 @@ import ArticleModal from "./articleModal";
 import HeaderPage from "./header";
 import FooterPage from './footer'
 import { getTopHeadlines } from "../store/actions/index";
-
+import InfiniteScroll from "react-infinite-scroll-component";
+import axios from 'axios'
 class ToHeadlines extends React.Component {
   constructor(props) {
     super(props);
+    this.state={
+      data:[]
+    }
   }
+  
   static async getInitialProps(ctx) {
     const dataVal = await ctx.reduxStore.dispatch(getTopHeadlines());
     return { data: dataVal.payload };
   }
+
+  fetchMoreData = () => {
+    // a fake async api call like which sends
+    // 20 more records in 1.5 secs
+    setTimeout(() => {
+      axios.get('https://newsapi.org/v2/top-headlines?country=us&apiKey=3f7e8b1b56a64d82a4892ef4bbfafaa5')
+      .then((response)=>{
+        const data=response.data.articles
+        this.setState({data})
+      })
+      
+    }, 1500);
+  };
 
   render() {
     console.log("props", this.props);
@@ -51,6 +69,12 @@ class ToHeadlines extends React.Component {
                   return (
                     <Col span={6} md={6} sm={12} xs={8} key={index}>
                       <div style={{ margin: "auto 0px" }}>
+                      <InfiniteScroll
+                          dataLength={this.state.data.length}
+                          next={this.fetchMoreData}
+                          hasMore={true}
+                          loader={<h4>Loading...</h4>}
+                        >
                         <Card
                           style={{ margin: "auto 0px" }}
                           hoverable
@@ -80,6 +104,7 @@ class ToHeadlines extends React.Component {
                             author={headline.author}
                           />
                         </Card>
+                        </InfiniteScroll>
                       </div>
                     </Col>
                   );
