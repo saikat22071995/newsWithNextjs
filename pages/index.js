@@ -8,7 +8,7 @@ import HeaderPage from "./header";
 import FooterPage from './footer'
 import { getTopHeadlines } from "../store/actions/index";
 import InfiniteScroll from "react-infinite-scroll-component";
-import axios from 'axios'
+import {connect} from 'react-redux'
 class ToHeadlines extends React.Component {
   constructor(props) {
     super(props);
@@ -23,15 +23,11 @@ class ToHeadlines extends React.Component {
   }
 
   fetchMoreData = () => {
+    console.log('hii')
     // a fake async api call like which sends
     // 20 more records in 1.5 secs
     setTimeout(() => {
-      axios.get('https://newsapi.org/v2/top-headlines?country=us&apiKey=3f7e8b1b56a64d82a4892ef4bbfafaa5')
-      .then((response)=>{
-        const data=response.data.articles
-        this.setState({data})
-      })
-      
+      this.props.dispatch(getTopHeadlines())
     }, 1500);
   };
 
@@ -65,16 +61,17 @@ class ToHeadlines extends React.Component {
           >
             <Content>
               <Row gutter={16} type="flex">
-                {this.props.data.map((headline, index) => {
-                  return (
-                    <Col span={6} md={6} sm={12} xs={8} key={index}>
-                      <div style={{ margin: "auto 0px" }}>
-                      <InfiniteScroll
-                          dataLength={this.state.data.length}
+              <InfiniteScroll
+                          dataLength={this.props.data.length}
                           next={this.fetchMoreData}
                           hasMore={true}
                           loader={<h4>Loading...</h4>}
                         >
+                {this.props.data.map((headline, index) => {
+                  return (
+                    <Col span={6} md={6} sm={12} xs={8} key={index}>
+                      <div style={{ margin: "auto 0px" }}>
+                      
                         <Card
                           style={{ margin: "auto 0px" }}
                           hoverable
@@ -104,11 +101,12 @@ class ToHeadlines extends React.Component {
                             author={headline.author}
                           />
                         </Card>
-                        </InfiniteScroll>
+                        
                       </div>
                     </Col>
                   );
                 })}
+                </InfiniteScroll>
               </Row>
             </Content>
           </Col>
@@ -118,4 +116,4 @@ class ToHeadlines extends React.Component {
     );
   }
 }
-export default ToHeadlines;
+export default connect()(ToHeadlines);
